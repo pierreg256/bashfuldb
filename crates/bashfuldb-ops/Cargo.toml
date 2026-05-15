@@ -1,0 +1,12 @@
+[package]
+name = "bashfuldb-ops"
+description = "Operations, observability, backup/restore for BashfulDB"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+bashfuldb-cluster = { path = "../bashfuldb-cluster" }
+bashfuldb-storage = { path = "../bashfuldb-storage" }
+thiserror = { workspace = true }
+tokio = { workspace = true }

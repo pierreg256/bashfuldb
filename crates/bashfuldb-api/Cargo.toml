@@ -1,0 +1,16 @@
+[package]
+name = "bashfuldb-api"
+description = "Public HTTP API layer for BashfulDB"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+bashfuldb-auth = { path = "../bashfuldb-auth" }
+bashfuldb-document = { path = "../bashfuldb-document" }
+bashfuldb-replication = { path = "../bashfuldb-replication" }
+bashfuldb-schema = { path = "../bashfuldb-schema" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }

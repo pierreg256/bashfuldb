@@ -1,0 +1,8 @@
+[package]
+name = "bashfuldb-clock"
+description = "Hybrid Logical Clocks and vector clocks for BashfulDB"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+serde = { workspace = true }

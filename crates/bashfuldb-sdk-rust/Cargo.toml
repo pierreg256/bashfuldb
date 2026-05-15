@@ -1,0 +1,12 @@
+[package]
+name = "bashfuldb-sdk-rust"
+description = "Async Rust client driver for BashfulDB"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+bashfuldb-document = { path = "../bashfuldb-document" }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }

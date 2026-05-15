@@ -1,0 +1,13 @@
+[package]
+name = "bashfuldb-protocol"
+description = "Wire protocol (RESP-like) parser, TCP/TLS server for BashfulDB"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+bashfuldb-auth = { path = "../bashfuldb-auth" }
+bashfuldb-document = { path = "../bashfuldb-document" }
+bytes = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }

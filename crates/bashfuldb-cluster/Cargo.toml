@@ -1,0 +1,12 @@
+[package]
+name = "bashfuldb-cluster"
+description = "Ring topology, gossip protocol, and membership for BashfulDB"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+bashfuldb-clock = { path = "../bashfuldb-clock" }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }

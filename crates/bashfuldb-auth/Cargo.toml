@@ -1,0 +1,13 @@
+[package]
+name = "bashfuldb-auth"
+description = "Authentication (JWT/Argon2id) and RBAC for BashfulDB"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+bashfuldb-clock = { path = "../bashfuldb-clock" }
+bashfuldb-storage = { path = "../bashfuldb-storage" }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }

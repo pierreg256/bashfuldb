@@ -1,0 +1,14 @@
+[package]
+name = "bashfuldb-replication"
+description = "Quorum reads/writes, hinted handoff, read repair for BashfulDB"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+bashfuldb-clock = { path = "../bashfuldb-clock" }
+bashfuldb-cluster = { path = "../bashfuldb-cluster" }
+bashfuldb-document = { path = "../bashfuldb-document" }
+bashfuldb-storage = { path = "../bashfuldb-storage" }
+thiserror = { workspace = true }
+tokio = { workspace = true }

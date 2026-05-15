@@ -1,0 +1,11 @@
+[package]
+name = "bashfuldb-storage"
+description = "Storage engine abstraction and implementations for BashfulDB"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+bashfuldb-document = { path = "../bashfuldb-document" }
+thiserror = { workspace = true }
+tokio = { workspace = true }

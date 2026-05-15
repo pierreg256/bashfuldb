@@ -1,0 +1,32 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/bashfuldb-clock",
+    "crates/bashfuldb-document",
+    "crates/bashfuldb-storage",
+    "crates/bashfuldb-auth",
+    "crates/bashfuldb-cluster",
+    "crates/bashfuldb-replication",
+    "crates/bashfuldb-schema",
+    "crates/bashfuldb-protocol",
+    "crates/bashfuldb-api",
+    "crates/bashfuldb-ops",
+    "crates/bashfuldb-sdk-rust",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/pierregilot/bashfuldb"
+
+[workspace.dependencies]
+tokio = { version = "1", features = ["full"] }
+async-trait = "0.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+uuid = { version = "1", features = ["v4", "serde"] }
+bytes = "1"
