@@ -1,0 +1,21 @@
+[package]
+name = "bashfuldb-document-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+bashfuldb-document = { path = ".." }
+libfuzzer-sys = "0.4"
+
+[[bin]]
+name = "decode"
+path = "fuzz_targets/decode.rs"
+test = false
+doc = false
+bench = false
+
+[workspace]

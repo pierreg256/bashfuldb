@@ -1,3 +1,5 @@
+#![deny(missing_docs)]
+
 //! Document data model, Value types, and binary codec.
 //!
 //! This crate defines the core data primitives for BashfulDB: the schema-less
