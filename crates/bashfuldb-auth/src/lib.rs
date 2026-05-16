@@ -15,11 +15,15 @@
 //! - [`Claims`] — JWT payload.
 //! - [`TokenPair`] — Access + refresh tokens.
 
+mod authn;
+mod authz;
 mod error;
 mod rbac;
 mod traits;
 mod types;
 
+pub use authn::{AuthConfig, AuthService, JwtMode, UserCreateRequest};
+pub use authz::RbacAuthorizer;
 pub use error::AuthError;
 pub use rbac::{Action, Resource, Role};
 pub use traits::{Authenticator, Authorizer};
@@ -30,3 +34,15 @@ pub use types::{
 /// Result type for auth operations.
 pub type Result<T> = std::result::Result<T, AuthError>;
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn exports_are_usable() {
+        let _ = DEFAULT_ACCESS_TTL;
+        let _ = DEFAULT_REFRESH_TTL;
+        let _ = BOOTSTRAP_ADMIN_USER;
+        let _ = Resource::cluster();
+    }
+}

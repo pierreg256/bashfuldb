@@ -42,3 +42,14 @@ pub enum AuthError {
     #[error("auth internal error: {message}")]
     Internal { message: String },
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn display_messages_are_stable() {
+        assert_eq!(AuthError::InvalidCredentials.to_string(), "invalid credentials");
+        assert_eq!(AuthError::TokenExpired.to_string(), "token expired");
+    }
+}
