@@ -7,9 +7,9 @@ edition.workspace = true
 [dependencies]
 async-trait = { workspace = true }
 bashfuldb-clock = { path = "../bashfuldb-clock" }
+rand = "0.8"
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
-tokio = { workspace = true }
+tokio = { workspace = true, features = ["test-util"] }
 uuid = { workspace = true }
-

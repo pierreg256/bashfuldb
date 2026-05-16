@@ -25,4 +25,8 @@ pub enum ClusterError {
     /// The ring is empty (no nodes have joined).
     #[error("ring is empty")]
     EmptyRing,
+
+    /// Clock operation failed.
+    #[error("clock error: {message}")]
+    ClockError { message: String },
 }

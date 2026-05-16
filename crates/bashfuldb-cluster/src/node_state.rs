@@ -71,6 +71,17 @@ impl std::fmt::Display for NodeState {
 mod tests {
     use super::*;
 
+    const ALL_STATES: [NodeState; 8] = [
+        NodeState::Joining,
+        NodeState::Bootstrapping,
+        NodeState::Healthy,
+        NodeState::Leaving,
+        NodeState::Draining,
+        NodeState::Suspect,
+        NodeState::Down,
+        NodeState::Rebuilding,
+    ];
+
     #[test]
     fn healthy_can_serve_all_traffic() {
         assert!(NodeState::Healthy.can_serve_reads());
@@ -112,5 +123,19 @@ mod tests {
         assert!(s.can_transition_to(NodeState::Healthy));
         assert!(s.can_transition_to(NodeState::Down));
         assert!(!s.can_transition_to(NodeState::Leaving));
+    }
+
+    #[test]
+    fn transition_matrix_matches_valid_transitions() {
+        for from in ALL_STATES {
+            for to in ALL_STATES {
+                let expected = from.valid_transitions().contains(&to);
+                assert_eq!(
+                    from.can_transition_to(to),
+                    expected,
+                    "transition mismatch for {from:?} -> {to:?}"
+                );
+            }
+        }
     }
 }
