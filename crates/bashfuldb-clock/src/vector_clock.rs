@@ -23,8 +23,8 @@ pub enum CausalOrder {
 ///
 /// Used to detect causal relationships and concurrent writes. Entries are
 /// kept sorted by [`NodeId`] for deterministic iteration. The clock is
-/// capped at [`MAX_ENTRIES`] (4,096); when exceeded, the oldest entry
-/// (lowest HLC) is evicted.
+/// capped at [`MAX_ENTRIES`] (4,096); inserting a new node above this limit
+/// returns [`crate::ClockError::VectorClockCapacityExceeded`].
 #[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct VectorClock {
     entries: BTreeMap<NodeId, Hlc>,
@@ -171,11 +171,35 @@ impl fmt::Debug for VectorClock {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use proptest::prelude::*;
 
     fn node(n: u8) -> NodeId {
         NodeId::from_uuid(uuid::Uuid::from_bytes([
             n, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ]))
+    }
+
+    fn node_from_u16(n: u16) -> NodeId {
+        NodeId::from_uuid(uuid::Uuid::from_u128(u128::from(n)))
+    }
+
+    fn build_clock(entries: &[(u16, u32, u16)]) -> VectorClock {
+        let mut vc = VectorClock::new();
+        for &(node_seed, physical, logical) in entries {
+            vc.increment(node_from_u16(node_seed), Hlc::new(u64::from(physical), logical))
+                .expect("bounded property-test clocks should not exceed capacity");
+        }
+        vc
+    }
+
+    fn next_hlc(current: Option<Hlc>) -> Hlc {
+        match current {
+            Some(existing) if existing.logical() < Hlc::MAX_LOGICAL => {
+                Hlc::new(existing.physical_ms(), existing.logical() + 1)
+            }
+            Some(existing) => Hlc::new(existing.physical_ms() + 1, 0),
+            None => Hlc::new(1, 0),
+        }
     }
 
     #[test]
@@ -272,5 +296,49 @@ mod tests {
         let new_node = NodeId::from_uuid(uuid::Uuid::from_u128(MAX_ENTRIES as u128));
         let result = vc.increment(new_node, Hlc::new(MAX_ENTRIES as u64, 0));
         assert!(result.is_err());
+    }
+
+    proptest! {
+        #[test]
+        fn merge_is_commutative_and_idempotent(
+            a_entries in proptest::collection::vec((0u16..2048u16, 0u32..10_000u32, 0u16..1024u16), 0..128),
+            b_entries in proptest::collection::vec((0u16..2048u16, 0u32..10_000u32, 0u16..1024u16), 0..128),
+        ) {
+            let a = build_clock(&a_entries);
+            let b = build_clock(&b_entries);
+
+            let mut ab = a.clone();
+            ab.merge(&b).expect("bounded property-test clocks should merge");
+            let mut ba = b.clone();
+            ba.merge(&a).expect("bounded property-test clocks should merge");
+            prop_assert_eq!(ab.compare(&ba), CausalOrder::Equal);
+
+            let mut aa = a.clone();
+            aa.merge(&a).expect("self merge should succeed");
+            prop_assert_eq!(aa.compare(&a), CausalOrder::Equal);
+        }
+
+        #[test]
+        fn partial_order_transitivity(
+            base_entries in proptest::collection::vec((0u16..2048u16, 0u32..10_000u32, 0u16..1024u16), 0..128),
+            node_b in 0u16..2048u16,
+            node_c in 0u16..2048u16,
+        ) {
+            let a = build_clock(&base_entries);
+
+            let mut b = a.clone();
+            let node_b_id = node_from_u16(node_b);
+            b.increment(node_b_id, next_hlc(a.get(&node_b_id)))
+                .expect("single increment should succeed");
+
+            let mut c = b.clone();
+            let node_c_id = node_from_u16(node_c);
+            c.increment(node_c_id, next_hlc(b.get(&node_c_id)))
+                .expect("single increment should succeed");
+
+            prop_assert_eq!(a.compare(&b), CausalOrder::Before);
+            prop_assert_eq!(b.compare(&c), CausalOrder::Before);
+            prop_assert_eq!(a.compare(&c), CausalOrder::Before);
+        }
     }
 }

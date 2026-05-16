@@ -12,6 +12,7 @@
 //! # Key traits
 //!
 //! - [`Clock`] — Abstraction over HLC tick/update operations.
+#![deny(missing_docs)]
 
 mod error;
 mod hlc;
@@ -27,4 +28,3 @@ pub use vector_clock::{CausalOrder, VectorClock};
 
 /// Result type for clock operations.
 pub type Result<T> = std::result::Result<T, ClockError>;
-
