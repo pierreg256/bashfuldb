@@ -29,3 +29,16 @@ pub trait Authorizer: Send + Sync + 'static {
     /// [`AuthError::PermissionDenied`](crate::AuthError::PermissionDenied).
     async fn check(&self, claims: &Claims, action: Action, resource: &Resource) -> Result<()>;
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn assert_send_sync_static<T: Send + Sync + 'static>() {}
+
+    #[test]
+    fn trait_object_bounds_compile() {
+        assert_send_sync_static::<Box<dyn Authenticator>>();
+        assert_send_sync_static::<Box<dyn Authorizer>>();
+    }
+}

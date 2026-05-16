@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
+use zeroize::Zeroize;
 
 /// Login credentials.
 ///
@@ -21,6 +22,12 @@ impl std::fmt::Debug for Credentials {
     }
 }
 
+impl Drop for Credentials {
+    fn drop(&mut self) {
+        self.password.zeroize();
+    }
+}
+
 /// A pair of access and refresh tokens returned on login/refresh.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TokenPair {
@@ -32,6 +39,13 @@ pub struct TokenPair {
     pub access_ttl: Duration,
     /// Refresh token time-to-live.
     pub refresh_ttl: Duration,
+}
+
+impl Drop for TokenPair {
+    fn drop(&mut self) {
+        self.access_token.zeroize();
+        self.refresh_token.zeroize();
+    }
 }
 
 /// JWT claims payload.
