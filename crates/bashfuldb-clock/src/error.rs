@@ -9,13 +9,24 @@ pub enum ClockError {
 
     /// The physical clock moved backward (clock skew detected).
     #[error("physical clock moved backward: got {got_ms}, expected >= {expected_ms}")]
-    ClockSkew { expected_ms: u64, got_ms: u64 },
+    ClockSkew {
+        /// Minimum expected physical timestamp in milliseconds.
+        expected_ms: u64,
+        /// Observed physical timestamp in milliseconds.
+        got_ms: u64,
+    },
 
     /// The HLC logical counter overflowed (65,535 ticks in the same ms).
     #[error("logical counter overflow at physical_ms={physical_ms}")]
-    LogicalOverflow { physical_ms: u64 },
+    LogicalOverflow {
+        /// Physical timestamp in milliseconds where overflow occurred.
+        physical_ms: u64,
+    },
 
     /// The physical timestamp exceeds 48 bits.
     #[error("physical_ms {physical_ms} exceeds 48-bit limit")]
-    PhysicalOverflow { physical_ms: u64 },
+    PhysicalOverflow {
+        /// Physical timestamp in milliseconds that exceeded 48-bit range.
+        physical_ms: u64,
+    },
 }

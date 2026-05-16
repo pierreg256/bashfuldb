@@ -233,6 +233,7 @@ fn system_time_ms() -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use proptest::prelude::*;
 
     #[test]
     fn wall_clock_tick_is_monotonic() {
@@ -295,5 +296,25 @@ mod tests {
     fn manual_clock_rejects_backward_time() {
         let clock = ManualClock::new(1000);
         clock.set_time(500);
+    }
+
+    proptest! {
+        #[test]
+        fn manual_tick_is_strictly_monotonic(
+            initial_ms in 0u64..1_000_000u64,
+            deltas in proptest::collection::vec(0u16..8u16, 1..512),
+        ) {
+            let clock = ManualClock::new(initial_ms);
+            let mut current_ms = initial_ms;
+            let mut previous = clock.now();
+
+            for delta in deltas {
+                current_ms += u64::from(delta);
+                clock.set_time(current_ms);
+                let next = clock.tick().expect("bounded property test should not overflow");
+                prop_assert!(next > previous);
+                previous = next;
+            }
+        }
     }
 }
