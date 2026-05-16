@@ -41,7 +41,8 @@ pub type ScanItem = (Vec<u8>, Vec<u8>);
 /// An atomic batch of mutations to apply together.
 #[derive(Debug, Clone, Default)]
 pub struct WriteBatch {
-    ops: Vec<BatchOp>,
+    /// Mutations to apply atomically in order.
+    pub ops: Vec<BatchOp>,
 }
 
 impl WriteBatch {
@@ -58,7 +59,12 @@ impl WriteBatch {
     }
 
     /// Adds a put operation to the batch.
-    pub fn put(&mut self, cf: impl Into<String>, key: impl Into<Vec<u8>>, value: impl Into<Vec<u8>>) {
+    pub fn put(
+        &mut self,
+        cf: impl Into<String>,
+        key: impl Into<Vec<u8>>,
+        value: impl Into<Vec<u8>>,
+    ) {
         self.ops.push(BatchOp::Put {
             cf: cf.into(),
             key: key.into(),
@@ -105,10 +111,7 @@ pub enum BatchOp {
         value: Vec<u8>,
     },
     /// Delete a key from a column family.
-    Delete {
-        cf: String,
-        key: Vec<u8>,
-    },
+    Delete { cf: String, key: Vec<u8> },
 }
 
 #[cfg(test)]
