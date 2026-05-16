@@ -1,5 +1,5 @@
-use bashfuldb_clock::NodeId;
 use crate::VnodeId;
+use bashfuldb_clock::NodeId;
 use std::collections::BTreeMap;
 
 /// Default number of virtual nodes per physical node.
@@ -8,7 +8,7 @@ pub const DEFAULT_VNODES_PER_NODE: usize = 256;
 /// The consistent hash ring.
 ///
 /// Maps virtual nodes (identified by their position on a u64 ring) to
-/// physical node IDs. Uses SHA-256 hashing of `{node_id}:{vnode_index}`
+/// physical node IDs. Uses FNV-1a hashing of `{node_id}:{vnode_index}`
 /// for placement.
 #[derive(Debug, Clone)]
 pub struct Ring {
@@ -120,17 +120,11 @@ impl Default for Ring {
 }
 
 /// Hash a key to a ring position.
-///
-/// Uses a fixed, deterministic algorithm: FNV-1a on the raw bytes.
-/// This is a protocol-level contract — the algorithm MUST NOT change
-/// across versions without a coordinated migration.
 fn hash_key(key: &[u8]) -> u64 {
     fnv1a_hash(key)
 }
 
 /// Hash a vnode placement: FNV-1a of `{node_uuid_bytes}:{index_le_bytes}`.
-///
-/// Deterministic across platforms and Rust versions.
 fn hash_vnode(node: &NodeId, index: usize) -> u64 {
     let mut data = Vec::with_capacity(24);
     data.extend_from_slice(&node.to_bytes());
@@ -156,6 +150,7 @@ fn fnv1a_hash(data: &[u8]) -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use uuid::Uuid;
 
     #[test]
     fn empty_ring_returns_no_owners() {
@@ -225,5 +220,37 @@ mod tests {
 
         let owners = ring.owners_for_key(b"key", 5);
         assert_eq!(owners.len(), 2); // Only 2 distinct nodes exist
+    }
+
+    #[test]
+    fn ring_distribution_is_statistically_uniform() {
+        let mut ring = Ring::new();
+        let node_count = 8_u128;
+        let sample_count = 20_000_u128;
+        let mut nodes = Vec::new();
+        for index in 1..=node_count {
+            let node = NodeId::from_uuid(Uuid::from_u128(index));
+            ring.add_node(node);
+            nodes.push(node);
+        }
+
+        let mut counts = std::collections::HashMap::new();
+        for key_index in 0..sample_count {
+            let key = format!("key-{key_index}");
+            let owners = ring.owners_for_key(key.as_bytes(), 1);
+            let owner = owners[0];
+            let entry = counts.entry(owner).or_insert(0_u128);
+            *entry += 1;
+        }
+
+        let expected = sample_count as f64 / node_count as f64;
+        for node in nodes {
+            let observed = *counts.get(&node).unwrap_or(&0_u128) as f64;
+            let deviation = (observed - expected).abs() / expected;
+            assert!(
+                deviation < 0.35,
+                "node {node} deviation too high: observed={observed}, expected={expected}"
+            );
+        }
     }
 }

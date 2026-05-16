@@ -1,6 +1,6 @@
+use crate::{GossipMessage, MembershipEvent, NodeInfo, NodeState, Ring};
 use async_trait::async_trait;
 use bashfuldb_clock::NodeId;
-use crate::{GossipMessage, MembershipEvent, NodeInfo, NodeState, Ring};
 use std::sync::Arc;
 
 /// Cluster membership and ring topology.
