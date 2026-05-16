@@ -128,7 +128,9 @@ impl fmt::Debug for Value {
             Value::Bool(v) => write!(f, "Bool({v})"),
             Value::Int(v) => write!(f, "Int({v})"),
             Value::Float(v) => write!(f, "Float({v})"),
-            Value::String(v) if v.len() > 32 => write!(f, "String(\"{}...\" len={})", &v[..32], v.len()),
+            Value::String(v) if v.len() > 32 => {
+                write!(f, "String(\"{}...\" len={})", &v[..32], v.len())
+            }
             Value::String(v) => write!(f, "String({v:?})"),
             Value::Blob(v) => write!(f, "Blob({} bytes)", v.len()),
             Value::Array(v) => write!(f, "Array({} items)", v.len()),
@@ -152,9 +154,7 @@ impl From<serde_json::Value> for Value {
                 }
             }
             serde_json::Value::String(s) => Value::String(s),
-            serde_json::Value::Array(a) => {
-                Value::Array(a.into_iter().map(Value::from).collect())
-            }
+            serde_json::Value::Array(a) => Value::Array(a.into_iter().map(Value::from).collect()),
             serde_json::Value::Object(o) => {
                 Value::Object(o.into_iter().map(|(k, v)| (k, Value::from(v))).collect())
             }
@@ -168,11 +168,9 @@ impl From<Value> for serde_json::Value {
             Value::Null => serde_json::Value::Null,
             Value::Bool(b) => serde_json::Value::Bool(b),
             Value::Int(i) => serde_json::Value::Number(i.into()),
-            Value::Float(f) => {
-                serde_json::Number::from_f64(f)
-                    .map(serde_json::Value::Number)
-                    .unwrap_or(serde_json::Value::Null)
-            }
+            Value::Float(f) => serde_json::Number::from_f64(f)
+                .map(serde_json::Value::Number)
+                .unwrap_or(serde_json::Value::Null),
             Value::String(s) => serde_json::Value::String(s),
             Value::Blob(b) => {
                 use base64::Engine;
@@ -181,13 +179,11 @@ impl From<Value> for serde_json::Value {
             Value::Array(a) => {
                 serde_json::Value::Array(a.into_iter().map(serde_json::Value::from).collect())
             }
-            Value::Object(o) => {
-                serde_json::Value::Object(
-                    o.into_iter()
-                        .map(|(k, v)| (k, serde_json::Value::from(v)))
-                        .collect(),
-                )
-            }
+            Value::Object(o) => serde_json::Value::Object(
+                o.into_iter()
+                    .map(|(k, v)| (k, serde_json::Value::from(v)))
+                    .collect(),
+            ),
         }
     }
 }
@@ -201,7 +197,7 @@ mod tests {
         assert_eq!(Value::Null.type_tag(), 0x00);
         assert_eq!(Value::Bool(true).type_tag(), 0x01);
         assert_eq!(Value::Int(42).type_tag(), 0x02);
-        assert_eq!(Value::Float(3.14).type_tag(), 0x03);
+        assert_eq!(Value::Float(std::f64::consts::PI).type_tag(), 0x03);
         assert_eq!(Value::String("hi".into()).type_tag(), 0x04);
         assert_eq!(Value::Blob(vec![]).type_tag(), 0x05);
         assert_eq!(Value::Array(vec![]).type_tag(), 0x06);
@@ -214,7 +210,7 @@ mod tests {
             Value::Null,
             Value::Bool(true),
             Value::Int(42),
-            Value::Float(3.14),
+            Value::Float(std::f64::consts::PI),
             Value::String("hello".into()),
         ];
         for v in values {

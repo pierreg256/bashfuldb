@@ -64,9 +64,7 @@ impl Codec for BinaryCodec {
             return Err(DocumentError::UnknownTypeTag { tag: bytes[0] });
         }
         if bytes[3] != CODEC_VERSION {
-            return Err(DocumentError::UnsupportedCodecVersion {
-                version: bytes[3],
-            });
+            return Err(DocumentError::UnsupportedCodecVersion { version: bytes[3] });
         }
         let mut offset = HEADER_SIZE;
         let value = decode_value(bytes, &mut offset, 0)?;
@@ -304,7 +302,39 @@ fn read_slice<'a>(bytes: &'a [u8], offset: &mut usize, len: usize) -> crate::Res
 #[cfg(test)]
 mod tests {
     use super::*;
+    use proptest::collection::{btree_map, vec};
+    use proptest::prelude::*;
     use std::collections::BTreeMap;
+
+    fn finite_f64() -> impl Strategy<Value = f64> {
+        any::<f64>().prop_filter("finite f64", |f| f.is_finite())
+    }
+
+    fn string_strategy(max_len: usize) -> impl Strategy<Value = String> {
+        vec(any::<char>(), 0..=max_len).prop_map(|chars| chars.into_iter().collect())
+    }
+
+    fn value_strategy() -> impl Strategy<Value = Value> {
+        let leaf = prop_oneof![
+            Just(Value::Null),
+            any::<bool>().prop_map(Value::Bool),
+            any::<i64>().prop_map(Value::Int),
+            finite_f64().prop_map(Value::Float),
+            string_strategy(128).prop_map(Value::String),
+            vec(any::<u8>(), 0..=256).prop_map(Value::Blob),
+        ];
+
+        // `prop_recursive(depth, max_size, max_items)`:
+        // - depth: cap recursion depth to keep generated values valid/fast.
+        // - max_size: target total generated tree size budget.
+        // - max_items: branching factor for recursive collections.
+        leaf.prop_recursive(8, 8_192, 16, |inner| {
+            prop_oneof![
+                vec(inner.clone(), 0..=16).prop_map(Value::Array),
+                btree_map(string_strategy(32), inner, 0..=16).prop_map(Value::Object),
+            ]
+        })
+    }
 
     fn roundtrip(value: &Value) {
         let codec = BinaryCodec;
@@ -335,7 +365,7 @@ mod tests {
 
     #[test]
     fn roundtrip_float() {
-        roundtrip(&Value::Float(3.14));
+        roundtrip(&Value::Float(std::f64::consts::PI));
         roundtrip(&Value::Float(0.0));
         roundtrip(&Value::Float(-42.5));
         roundtrip(&Value::Float(f64::MIN));
@@ -459,5 +489,16 @@ mod tests {
             result,
             Err(DocumentError::NestingDepthExceeded { .. })
         ));
+    }
+
+    proptest! {
+        #[test]
+        fn decode_encode_roundtrip_holds(value in value_strategy()) {
+            let codec = BinaryCodec;
+            let encoded = codec.encode(&value)?;
+            prop_assert_eq!(encoded.len(), HEADER_SIZE + codec.encoded_size(&value));
+            let decoded = codec.decode(&encoded)?;
+            prop_assert_eq!(decoded, value);
+        }
     }
 }
