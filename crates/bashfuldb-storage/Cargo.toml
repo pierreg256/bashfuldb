@@ -9,3 +9,7 @@ async-trait = { workspace = true }
 bashfuldb-document = { path = "../bashfuldb-document" }
 thiserror = { workspace = true }
 tokio = { workspace = true }
+rocksdb = "0.22"
+
+[dev-dependencies]
+tempfile = "3"
