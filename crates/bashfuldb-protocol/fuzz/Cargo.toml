@@ -1,0 +1,22 @@
+[package]
+name = "bashfuldb-protocol-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+bashfuldb-protocol = { path = "..", default-features = false }
+libfuzzer-sys = "0.4"
+tokio = { version = "1", features = ["rt", "macros"] }
+
+[[bin]]
+name = "resp_parser"
+path = "fuzz_targets/resp_parser.rs"
+test = false
+doc = false
+bench = false
+
+[workspace]
