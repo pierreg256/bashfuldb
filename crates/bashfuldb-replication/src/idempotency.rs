@@ -3,6 +3,7 @@ use bashfuldb_document::Document;
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
+/// Idempotency window: 15 minutes.
 const TTL: Duration = Duration::from_secs(15 * 60);
 
 struct Entry {

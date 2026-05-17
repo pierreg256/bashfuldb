@@ -135,6 +135,7 @@ impl ReplicaStore {
         &self,
         transport: &dyn crate::ReplicationTransport,
     ) -> Result<usize> {
+        /// Hints older than 24 hours are discarded (24 h × 3600 s × 1000 ms).
         const HINT_TTL_MS: u64 = 24 * 3600 * 1000;
 
         let now_ms = current_wall_ms();
