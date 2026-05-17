@@ -6,11 +6,24 @@ edition.workspace = true
 
 [dependencies]
 async-trait = { workspace = true }
+axum = { version = "0.8", features = ["macros"] }
+base64 = { workspace = true }
 bashfuldb-auth = { path = "../bashfuldb-auth" }
+bashfuldb-clock = { path = "../bashfuldb-clock" }
+bashfuldb-cluster = { path = "../bashfuldb-cluster" }
 bashfuldb-document = { path = "../bashfuldb-document" }
 bashfuldb-replication = { path = "../bashfuldb-replication" }
 bashfuldb-schema = { path = "../bashfuldb-schema" }
+bytes = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
+tokio = { workspace = true }
+tower = { version = "0.5" }
+tower-http = { version = "0.6", features = ["trace"] }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+axum-test = "20"
 tokio = { workspace = true }
