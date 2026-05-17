@@ -6,7 +6,13 @@ edition.workspace = true
 
 [dependencies]
 async-trait = { workspace = true }
+axum = "0.8.6"
+base64 = { workspace = true }
 bashfuldb-cluster = { path = "../bashfuldb-cluster" }
+bashfuldb-clock = { path = "../bashfuldb-clock" }
 bashfuldb-storage = { path = "../bashfuldb-storage" }
+prometheus = "0.13.4"
+serde = { workspace = true }
+serde_json = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
